@@ -350,6 +350,7 @@ function init() {
       const a = i * 2.39996, r = 0.03 + (i % 7) * 0.02, drop = i > 22 ? (i - 22) * 0.028 : 0;
       const lx = px + Math.cos(a) * r - drop * 0.25, ly = C.h + 0.15 + (i % 5) * 0.035 - drop;
       if (lx > px + 0.015 && ly < py + 0.02) continue; // would poke into the book pile
+      if (ly < C.h + 0.08) continue; // would sink through the crate top
       const l = add(heart, i % 4 ? leafA : leafB, lx, ly, pz + 0.02 + Math.abs(Math.sin(a)) * r);
       l.rotation.set(Math.sin(i) * 0.5, a, 0.5 - drop * 1.2); l.scale.setScalar(0.9 + (i % 3) * 0.25);
     }
