@@ -141,6 +141,7 @@ export const content = {
       highlights: [],
       tags: ['LLM', 'Recommendations'],
       colors: ['#ff8a5c', '#c2416b'],
+      links: [{ label: 'GitHub', url: 'https://github.com/cameron-weston/ReelTaste' }],
     },
     {
       title: 'This portfolio',
