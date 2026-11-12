@@ -153,6 +153,7 @@ export const content = {
       highlights: ['No build step: plain HTML, CSS and ES modules', 'Full-screen fallback for phones and browsers without WebGL'],
       tags: ['Three.js', 'WebGL', 'CSS'],
       colors: ['#c9a27a', '#4a3324'],
+      links: [{ label: 'GitHub', url: 'https://github.com/cameron-weston/Portfolio' }],
     },
   ],
 
