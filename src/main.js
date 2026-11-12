@@ -348,7 +348,9 @@ function init() {
     const leafA = std(0x3f7a44, { roughness: 0.6 }), leafB = std(0x7fae5a, { roughness: 0.6 });
     for (let i = 0; i < 38; i++) {
       const a = i * 2.39996, r = 0.03 + (i % 7) * 0.02, drop = i > 22 ? (i - 22) * 0.028 : 0;
-      const l = add(heart, i % 4 ? leafA : leafB, px + Math.cos(a) * r - drop * 0.25, C.h + 0.15 + (i % 5) * 0.035 - drop, pz + 0.02 + Math.abs(Math.sin(a)) * r);
+      const lx = px + Math.cos(a) * r - drop * 0.25, ly = C.h + 0.15 + (i % 5) * 0.035 - drop;
+      if (lx > px + 0.015 && ly < py + 0.02) continue; // would poke into the book pile
+      const l = add(heart, i % 4 ? leafA : leafB, lx, ly, pz + 0.02 + Math.abs(Math.sin(a)) * r);
       l.rotation.set(Math.sin(i) * 0.5, a, 0.5 - drop * 1.2); l.scale.setScalar(0.9 + (i % 3) * 0.25);
     }
     // three little bottles
@@ -359,7 +361,7 @@ function init() {
     });
   }
 
-  // ───────────────────────── hanging pothos + air purifier, right corner ─────────────────────────
+  // ───────────────────────── hanging pothos + 3D printer, right corner ─────────────────────────
   {
     const H = { x: 2.52, z: 0.42, pot: 2.22 };
     const rope = std(0xd8c9ae, { roughness: 1 });
@@ -392,9 +394,34 @@ function init() {
         prev = p;
       }
     }
-    // air purifier
-    cyl(0.17, 0.17, 0.62, M.white, 2.62, 0.31, 0.36, undefined, 32);
-    cyl(0.14, 0.14, 0.012, std(0x55585c, { roughness: 0.5 }), 2.62, 0.625, 0.36, undefined, 32);
+    // 3D printer on a low white cabinet
+    const P = { x: 2.66, z: 0.36, top: 0.46 };
+    box(0.5, P.top - 0.04, 0.42, M.white, P.x, 0.04 + (P.top - 0.04) / 2, P.z);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) cyl(0.012, 0.012, 0.04, M.black, P.x + sx * 0.21, 0.02, P.z + sz * 0.17, undefined, 10);
+    box(0.44, 0.004, 0.002, std(0xbdb7ad), P.x, P.top * 0.55, P.z + 0.2115);
+    const pr = new THREE.Group(); pr.position.set(P.x, P.top, P.z); scene.add(pr);
+    const frame = std(0x1b1c20, { roughness: 0.45, metalness: 0.5 }), orange = std(0xf26a1b, { roughness: 0.5 });
+    rbox(0.4, 0.05, 0.36, 0.008, frame, 0, 0.026, 0, pr);                               // base
+    box(0.07, 0.03, 0.002, glow(0x7fd4ff, 1.4), -0.12, 0.028, 0.1812, pr).castShadow = false; // status screen
+    cyl(0.009, 0.009, 0.006, M.silver, 0.13, 0.028, 0.183, pr, 16).rotation.x = Math.PI / 2;  // knob
+    for (const sx of [-1, 1]) box(0.012, 0.012, 0.3, M.silver, sx * 0.09, 0.058, 0.01, pr);   // bed rails
+    box(0.25, 0.008, 0.25, std(0x2a2b30, { roughness: 0.9 }), 0, 0.07, 0.03, pr);           // print bed
+    for (const sx of [-1, 1]) box(0.028, 0.4, 0.028, frame, sx * 0.18, 0.25, -0.06, pr);      // uprights
+    box(0.39, 0.028, 0.028, frame, 0, 0.45, -0.06, pr);                                     // top bar
+    for (const sx of [-1, 1]) rod(V(sx * 0.155, 0.05, -0.06), V(sx * 0.155, 0.44, -0.06), 0.004, M.silver, pr); // lead screws
+    box(0.39, 0.024, 0.024, M.silver, 0, 0.2, -0.04, pr);                                   // x gantry
+    rbox(0.055, 0.07, 0.05, 0.008, frame, 0.03, 0.195, -0.005, pr);                         // print head
+    box(0.03, 0.03, 0.002, orange, 0.03, 0.205, 0.021, pr).castShadow = false;
+    cyl(0.006, 0.0015, 0.016, M.brass, 0.03, 0.152, -0.005, pr, 10);                        // nozzle
+    // a half-finished orange vase on the bed
+    add(new THREE.LatheGeometry([[0.001, 0], [0.026, 0], [0.034, 0.02], [0.03, 0.045], [0.022, 0.066]].map(([r, y]) => new THREE.Vector2(r, y)), 20),
+      std(0xf26a1b, { roughness: 0.6, side: THREE.DoubleSide }), 0.03, 0.074, -0.005, pr);
+    // filament spool on the top bar
+    const spool = new THREE.Group(); spool.position.set(-0.07, 0.535, -0.06); spool.rotation.z = Math.PI / 2; pr.add(spool);
+    cyl(0.062, 0.062, 0.04, orange, 0, 0, 0, spool, 28);
+    for (const sy of [-1, 1]) cyl(0.075, 0.075, 0.004, std(0x121214, { roughness: 0.4 }), 0, sy * 0.022, 0, spool, 28);
+    box(0.02, 0.07, 0.02, frame, -0.07, 0.49, -0.06, pr);
+    rod(V(-0.055, 0.475, -0.03), V(0.03, 0.235, -0.005), 0.0015, orange, pr);                // filament feeding the head
   }
 
   // framed résumé on the wall, left of the panel
@@ -411,10 +438,38 @@ function init() {
       }
     });
     scene.userData.resumeTex = tex;
-    box(0.44, 0.58, 0.03, M.black, -0.72, 1.78, 0.02);
-    add(new THREE.PlaneGeometry(0.38, 0.52), std(0xffffff, { map: tex, roughness: 0.7 }), -0.72, 1.78, 0.037).castShadow = false;
-    hotspot('resume', V(-0.72, 2.2, 0.05));
+    box(0.44, 0.58, 0.03, M.black, -0.72, 1.66, 0.02);
+    add(new THREE.PlaneGeometry(0.38, 0.52), std(0xffffff, { map: tex, roughness: 0.7 }), -0.72, 1.66, 0.037).castShadow = false;
+    hotspot('resume', V(-0.72, 2.04, 0.05));
     hotspot('location', V(WIN.x + 0.42, WIN.y + 0.42, 0.05));
+  }
+
+  // purple neon sign above the résumé
+  {
+    const NEON = '"Yellowtail", "Snell Roundhand", "Brush Script MT", cursive';
+    const tex = canvasTex(1024, 560, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = g.lineCap = 'round';
+      const line = (text, y, px) => {
+        g.font = `${px}px ${NEON}`;
+        const tw = g.measureText(text).width;
+        if (tw > w - 150) g.font = `${Math.floor(px * (w - 150) / tw)}px ${NEON}`;
+        g.shadowColor = '#a855f7';
+        for (const [blur, alpha] of [[70, 0.55], [34, 0.8], [12, 1]]) {
+          g.shadowBlur = blur; g.fillStyle = `rgba(190,110,255,${alpha})`; g.fillText(text, w / 2, y);
+        }
+        g.shadowBlur = 0; g.fillStyle = '#f6e9ff'; g.fillText(text, w / 2, y);
+      };
+      line('Welcome to my office', 185, 168);
+      line('Stay awhile', 395, 168);
+    });
+    scene.userData.neonTex = tex;
+    const sign = add(new THREE.PlaneGeometry(1.0, 0.547),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false, color: 0xffffff }), -0.72, 2.5, 0.03);
+    sign.castShadow = sign.receiveShadow = false;
+    const neonLight = new THREE.PointLight(0xa855f7, 1.1, 2.6, 1.8);
+    neonLight.position.set(-0.72, 2.5, 0.35); scene.add(neonLight);
+    document.fonts?.load('168px Yellowtail').then(() => tex.redraw());
   }
 
   // ───────────────────────── desk + computer ─────────────────────────
@@ -487,14 +542,24 @@ function init() {
     for (const s of [-1, 1]) dot(s * 0.008, 0.054, 0.019, 0.005, M.black, k).scale.set(0.8, 1.3, 0.5);
   }
   {
-    // duck in a blue cap
-    const d = new THREE.Group(); d.position.set(0.83, riserTop, RZ); d.scale.setScalar(1.35); scene.add(d);
-    const yel = std(0xf2c12e, { roughness: 0.5 });
-    ball(0.024, yel, 0, 0.022, 0, d).scale.set(1.15, 0.9, 1);
-    ball(0.017, yel, 0.004, 0.052, 0.004, d);
-    ball(0.016, std(0x2f6fd0, { roughness: 0.5 }), 0.004, 0.062, 0.002, d).scale.set(1, 0.55, 1);
-    cyl(0.002, 0.008, 0.014, std(0xe2622b), 0.004, 0.05, 0.022, d, 8).rotation.x = Math.PI / 2;
-    for (const s of [-1, 1]) dot(0.004 + s * 0.007, 0.056, 0.015, 0.0025, M.black, d);
+    // crochet fire-mouse: navy back, cream belly, long snout, flame on its back
+    const d = new THREE.Group(); d.position.set(0.83, riserTop, RZ); d.scale.setScalar(1.45); scene.add(d);
+    const navy = std(0x2c4a63, { roughness: 0.95 }), cream = std(0xf0deb0, { roughness: 0.95 });
+    ball(0.022, cream, 0, 0.022, 0.002, d).scale.set(1, 1, 0.95);
+    ball(0.0225, navy, 0, 0.026, -0.005, d).scale.set(1.02, 1, 0.95);
+    ball(0.016, cream, 0, 0.05, 0.008, d).scale.set(0.95, 0.85, 1.25);
+    ball(0.0165, navy, 0, 0.055, 0.002, d).scale.set(1, 0.8, 1.15);
+    ball(0.007, cream, 0, 0.046, 0.03, d).scale.set(1, 0.8, 1.4);
+    for (const sd of [-1, 1]) {
+      const eye = box(0.007, 0.0014, 0.001, M.black, sd * 0.009, 0.052, 0.0215, d); eye.rotation.z = sd * 0.35; eye.castShadow = false;
+      ball(0.006, cream, sd * 0.016, 0.006, 0.01, d);
+      ball(0.005, cream, sd * 0.019, 0.028, 0.012, d);
+    }
+    const fire = [std(0xd8362a, { roughness: 0.9, emissive: 0x7a1408, emissiveIntensity: 0.6 }), std(0xf08a1c, { roughness: 0.9, emissive: 0x8a3a00, emissiveIntensity: 0.6 })];
+    [[-0.013, 0.2], [-0.0045, -0.1], [0.0045, 0.1], [0.013, -0.2]].forEach(([x, tilt], n) => {
+      const f = cyl(0.0005, 0.006, 0.02 + (n % 2) * 0.006, fire[n % 2], x, 0.04, -0.022, d, 8);
+      f.rotation.set(-0.9, 0, -x * 30 + tilt * 0);
+    });
   }
   {
     // small red friend
@@ -522,7 +587,6 @@ function init() {
     for (const s of [-1, 1]) dot(s * 0.009, 0.03, 0.025, 0.003, M.black, m);
     hotspot('about', V(1.21, riserTop + 0.15, RZ));
   }
-  rbox(0.05, 0.085, 0.05, 0.02, std(0x7d8078, { roughness: 0.7 }), 0.52, riserTop + 0.043, 0.33); // grey cup
   // Mac mini (click → first link, usually GitHub)
   const mini = new THREE.Group(); mini.position.set(1.5, riserTop, 0.36); scene.add(mini);
   rbox(0.13, 0.05, 0.13, 0.016, M.silver, 0, 0.0255, 0, mini);
