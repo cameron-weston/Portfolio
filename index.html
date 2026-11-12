@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cameron Weston — Senior Software Engineer</title>
+  <meta name="description" content="Cameron Weston — senior full-stack software engineer in Seattle. 10 years of production code, AI code evaluation and agentic coding.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="3D room. Click the monitor to browse projects."></canvas>
+
+  <header id="hud">
+    <h1 id="hud-name"></h1>
+    <p id="hud-tagline"></p>
+    <nav id="hud-links" aria-label="Links"></nav>
+  </header>
+
+  <div id="hotspots"></div>
+  <aside id="card" hidden role="dialog" aria-live="polite"></aside>
+
+  <button id="back" hidden>← Back to the room</button>
+  <div id="os" aria-hidden="true"></div>
+
+  <div id="loader"><span>Setting up the room…</span></div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
